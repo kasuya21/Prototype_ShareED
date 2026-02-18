@@ -2,6 +2,7 @@ import db from '../database/db.js';
 import { v4 as uuidv4 } from 'uuid';
 import { NotFoundError, ValidationError, ForbiddenError } from '../utils/errors.js';
 import { updateQuestProgress } from './questService.js';
+import { checkAndUnlockAchievements } from './achievementService.js';
 
 /**
  * Post Service
@@ -87,6 +88,14 @@ export async function createPost(userId, postData) {
   } catch (error) {
     // Log error but don't fail the post creation
     console.error('Failed to update quest progress:', error);
+  }
+
+  // Requirement 12.1, 12.5: Check and unlock achievements after post creation
+  try {
+    await checkAndUnlockAchievements(userId);
+  } catch (error) {
+    // Log error but don't fail the post creation
+    console.error('Failed to check achievements:', error);
   }
 
   return {
@@ -227,6 +236,11 @@ export async function getPost(postId) {
 
   if (!post) {
     throw new NotFoundError('Post not found');
+  }
+
+  // Check if post is deleted
+  if (post.status === 'deleted') {
+    throw new NotFoundError('Post has been deleted');
   }
 
   return {

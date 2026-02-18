@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { NotFoundError, ConflictError, ValidationError } from '../utils/errors.js';
 import { createNotification } from './notificationService.js';
 import { updateQuestProgress } from './questService.js';
+import { checkAndUnlockAchievements } from './achievementService.js';
 
 /**
  * Interaction Service
@@ -77,6 +78,14 @@ export async function likePost(userId, postId) {
   } catch (error) {
     // Log error but don't fail the like operation
     console.error('Failed to update quest progress:', error);
+  }
+
+  // Requirement 12.1, 12.5: Check and unlock achievements after like action
+  try {
+    await checkAndUnlockAchievements(userId);
+  } catch (error) {
+    // Log error but don't fail the like operation
+    console.error('Failed to check achievements:', error);
   }
 }
 
@@ -230,6 +239,14 @@ export async function createComment(userId, postId, content) {
   } catch (error) {
     // Log error but don't fail the comment operation
     console.error('Failed to update quest progress:', error);
+  }
+
+  // Requirement 12.1, 12.5: Check and unlock achievements after comment action
+  try {
+    await checkAndUnlockAchievements(userId);
+  } catch (error) {
+    // Log error but don't fail the comment operation
+    console.error('Failed to check achievements:', error);
   }
 
   return {

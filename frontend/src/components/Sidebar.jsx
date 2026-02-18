@@ -84,7 +84,7 @@ function Sidebar() {
               to={item.path}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive(item.path)
-                  ? 'bg-blue-50 text-blue-600'
+                  ? 'bg-primary-50 text-primary-600'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -98,7 +98,7 @@ function Sidebar() {
         <div className="mt-6">
           <Link
             to="/posts/create"
-            className="flex items-center justify-center space-x-2 w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center space-x-2 w-full bg-primary-600 text-white px-4 py-3 rounded-lg hover:bg-primary-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

@@ -8,6 +8,7 @@ import {
 } from '../services/authService.js';
 import { createOrUpdateUser } from '../services/userService.js';
 import { authenticate } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 import { ValidationError } from '../utils/errors.js';
 
 const router = express.Router();
@@ -16,7 +17,7 @@ const router = express.Router();
  * GET /api/auth/login
  * Initiate Google OAuth login
  */
-router.get('/login', (req, res) => {
+router.get('/login', authLimiter, (req, res) => {
   const params = new URLSearchParams({
     client_id: config.google.clientId,
     redirect_uri: config.google.callbackUrl,
@@ -37,7 +38,7 @@ router.get('/login', (req, res) => {
  * GET /api/auth/callback
  * Handle Google OAuth callback
  */
-router.get('/callback', async (req, res) => {
+router.get('/callback', authLimiter, async (req, res) => {
   try {
     const { code, error } = req.query;
 

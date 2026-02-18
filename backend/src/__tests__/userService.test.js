@@ -189,6 +189,51 @@ describe('User Service', () => {
       expect(updated.profile_picture).toBe(newPicture);
     });
 
+    test('should accept profile picture with .png extension', async () => {
+      const newPicture = 'https://example.com/newpic.png';
+      const updated = await updateProfile(testUser.id, {
+        profile_picture: newPicture
+      });
+
+      expect(updated.profile_picture).toBe(newPicture);
+    });
+
+    test('should accept profile picture with .jpeg extension', async () => {
+      const newPicture = 'https://example.com/newpic.jpeg';
+      const updated = await updateProfile(testUser.id, {
+        profile_picture: newPicture
+      });
+
+      expect(updated.profile_picture).toBe(newPicture);
+    });
+
+    test('should accept profile picture with uppercase extension', async () => {
+      const newPicture = 'https://example.com/newpic.JPG';
+      const updated = await updateProfile(testUser.id, {
+        profile_picture: newPicture
+      });
+
+      expect(updated.profile_picture).toBe(newPicture);
+    });
+
+    test('should reject profile picture with invalid format', async () => {
+      await expect(
+        updateProfile(testUser.id, { profile_picture: 'https://example.com/pic.gif' })
+      ).rejects.toThrow('Profile picture must be in JPG or PNG format');
+    });
+
+    test('should reject profile picture with .pdf extension', async () => {
+      await expect(
+        updateProfile(testUser.id, { profile_picture: 'https://example.com/pic.pdf' })
+      ).rejects.toThrow('Profile picture must be in JPG or PNG format');
+    });
+
+    test('should reject profile picture with .webp extension', async () => {
+      await expect(
+        updateProfile(testUser.id, { profile_picture: 'https://example.com/pic.webp' })
+      ).rejects.toThrow('Profile picture must be in JPG or PNG format');
+    });
+
     test('should reject theme not in inventory', async () => {
       await expect(
         updateProfile(testUser.id, { selected_theme: 'non-existent-theme' })

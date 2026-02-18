@@ -7,15 +7,39 @@ function PostCard({ post }) {
     university: 'มหาวิทยาลัย'
   };
 
+  // Format date safely
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('th-TH', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      return '';
+    }
+  };
+
+  // Get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/placeholder-image.jpg';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:3000${imagePath}`;
+  };
+
   return (
     <Link to={`/posts/${post.id}`} className="block">
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         {/* Cover Image */}
         <div className="h-48 bg-gray-200 overflow-hidden">
           <img
-            src={post.cover_image || '/placeholder-image.jpg'}
+            src={getImageUrl(post.cover_image || post.coverImage)}
             alt={post.title}
             className="w-full h-full object-cover"
+            onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}
           />
         </div>
 
@@ -37,7 +61,7 @@ function PostCard({ post }) {
               {post.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full"
+                  className="px-2 py-1 bg-primary-100 text-primary-600 text-xs rounded-full"
                 >
                   {tag}
                 </span>
@@ -56,6 +80,13 @@ function PostCard({ post }) {
               {educationLevelMap[post.education_level] || post.education_level}
             </span>
           </div>
+
+          {/* Date */}
+          {post.created_at && (
+            <div className="mb-2 text-xs text-gray-500">
+              {formatDate(post.created_at)}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="flex items-center justify-between text-sm text-gray-500">
@@ -85,9 +116,10 @@ function PostCard({ post }) {
             {post.author_name && (
               <div className="flex items-center gap-2">
                 <img
-                  src={post.author_picture || '/default-avatar.png'}
+                  src={getImageUrl(post.author_picture) || '/default-avatar.png'}
                   alt={post.author_name}
                   className="w-6 h-6 rounded-full"
+                  onError={(e) => { e.target.src = '/default-avatar.png'; }}
                 />
                 <span className="text-xs">{post.author_name}</span>
               </div>

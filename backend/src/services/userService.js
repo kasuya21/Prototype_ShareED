@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database/db.js';
-import { validateBioLength, validateEducationLevel } from '../utils/validators.js';
+import { validateBioLength, validateEducationLevel, validateProfilePictureFormat } from '../utils/validators.js';
 import { ValidationError, AuthorizationError } from '../utils/errors.js';
 
 /**
@@ -55,6 +55,15 @@ export async function getUser(userId) {
 }
 
 /**
+ * Get all users (Admin only)
+ * @returns {Promise<Array>} Array of all users
+ */
+export async function getAllUsers() {
+  const stmt = db.prepare('SELECT * FROM users ORDER BY created_at DESC');
+  return stmt.all();
+}
+
+/**
  * Update user profile
  * @param {string} userId - User ID
  * @param {Object} updates - Profile updates
@@ -69,6 +78,11 @@ export async function updateProfile(userId, updates) {
   // Validate education level (Requirement 13.8)
   if (updates.education_level !== undefined) {
     validateEducationLevel(updates.education_level);
+  }
+
+  // Validate profile picture format (Requirement 13.3)
+  if (updates.profile_picture !== undefined) {
+    validateProfilePictureFormat(updates.profile_picture);
   }
 
   // Validate nickname uniqueness (Requirement 13.1, 13.2)

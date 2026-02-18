@@ -1,8 +1,46 @@
 import express from 'express';
 import postService from '../services/postService.js';
+import searchService from '../services/searchService.js';
+import db from '../database/db.js';
 import { authenticate } from '../middleware/auth.js';
+import { postCreationLimiter, searchLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+
+// Search posts
+router.get('/search', searchLimiter, async (req, res) => {
+  try {
+    const { keyword, educationLevel, sortBy, page, pageSize } = req.query;
+    
+    const result = await searchService.searchPosts({
+      keyword,
+      educationLevel,
+      sortBy,
+      page: page ? parseInt(page) : undefined,
+      pageSize: pageSize ? parseInt(pageSize) : undefined
+    });
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error searching posts:', error);
+    
+    if (error.message.includes('Invalid')) {
+      return res.status(400).json({ 
+        error: { 
+          code: 'VALIDATION_ERROR', 
+          message: error.message 
+        } 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: { 
+        code: 'SERVER_ERROR', 
+        message: 'Failed to search posts' 
+      } 
+    });
+  }
+});
 
 // Get popular posts
 router.get('/popular', async (req, res) => {
@@ -22,25 +60,21 @@ router.get('/', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
     const offset = (page - 1) * pageSize;
-
-    import db from '../database/db.js';
     
     // Get total count
-    const countResult = await db.get(
-      'SELECT COUNT(*) as total FROM posts WHERE status = ?',
-      ['active']
-    );
+    const countResult = db.prepare(
+      'SELECT COUNT(*) as total FROM posts WHERE status = ?'
+    ).get('active');
     
     // Get posts
-    const posts = await db.all(
+    const posts = db.prepare(
       `SELECT p.*, u.nickname as author_name, u.profile_picture as author_picture
        FROM posts p
        JOIN users u ON p.author_id = u.id
        WHERE p.status = ?
        ORDER BY p.created_at DESC
-       LIMIT ? OFFSET ?`,
-      ['active', pageSize, offset]
-    );
+       LIMIT ? OFFSET ?`
+    ).all('active', pageSize, offset);
 
     res.json({
       posts,
@@ -69,12 +103,16 @@ router.get('/:id', async (req, res) => {
     res.json({ post });
   } catch (error) {
     console.error('Error fetching post:', error);
+    // Check if it's a NotFoundError
+    if (error.status === 404 || error.code === 'NOT_FOUND') {
+      return res.status(404).json({ error: { code: 'NOT_FOUND', message: error.message || 'Post not found' } });
+    }
     res.status(500).json({ error: { code: 'SERVER_ERROR', message: 'Failed to fetch post' } });
   }
 });
 
 // Create post (authenticated)
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, postCreationLimiter, async (req, res) => {
   try {
     const post = await postService.createPost(req.user.id, req.body);
     res.status(201).json({ post });

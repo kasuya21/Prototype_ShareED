@@ -1,6 +1,7 @@
 import db from '../database/db.js';
 import { v4 as uuidv4 } from 'uuid';
 import { NotFoundError, ConflictError, ValidationError } from '../utils/errors.js';
+import { checkAndUnlockAchievements } from './achievementService.js';
 
 /**
  * Follow Service
@@ -49,6 +50,15 @@ export async function followUser(followerId, followingId) {
   db.prepare(
     'INSERT INTO follows (id, follower_id, following_id) VALUES (?, ?, ?)'
   ).run(followId, followerId, followingId);
+
+  // Requirement 12.1, 12.5: Check and unlock achievements after follow action
+  // Check achievements for the user who gained a follower (followingId)
+  try {
+    await checkAndUnlockAchievements(followingId);
+  } catch (error) {
+    // Log error but don't fail the follow operation
+    console.error('Failed to check achievements:', error);
+  }
 }
 
 /**

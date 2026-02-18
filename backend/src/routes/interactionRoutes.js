@@ -4,12 +4,15 @@ import {
   unlikePost,
   hasUserLiked,
   getPostLikes,
+  createComment,
+  getPostComments,
   addBookmark,
   removeBookmark,
   getUserBookmarks,
   hasUserBookmarked
 } from '../services/interactionService.js';
 import { authenticate } from '../middleware/auth.js';
+import { commentLimiter } from '../middleware/rateLimiter.js';
 import { NotFoundError, ValidationError } from '../utils/errors.js';
 
 const router = express.Router();
@@ -91,6 +94,83 @@ router.get('/:postId/likes', async (req, res, next) => {
       count: likes.length
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/posts/:postId/comments
+ * Create a comment on a post
+ * Requirements: 14.4, 14.5
+ */
+router.post('/:postId/comments', authenticate, commentLimiter, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const userId = req.user.id;
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Comment content is required'
+        }
+      });
+    }
+
+    const comment = await createComment(userId, postId, content);
+
+    res.status(201).json({
+      comment
+    });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: error.message
+        }
+      });
+    }
+    
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        error: {
+          code: 'NOT_FOUND',
+          message: error.message
+        }
+      });
+    }
+    
+    next(error);
+  }
+});
+
+/**
+ * GET /api/posts/:postId/comments
+ * Get all comments for a post
+ * Requirements: 14.6
+ */
+router.get('/:postId/comments', async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+
+    const comments = await getPostComments(postId);
+
+    res.json({
+      comments,
+      count: comments.length
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        error: {
+          code: 'NOT_FOUND',
+          message: error.message
+        }
+      });
+    }
+    
     next(error);
   }
 });

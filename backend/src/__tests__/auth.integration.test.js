@@ -38,7 +38,7 @@ describe('Authentication API Integration Tests', () => {
 
   afterAll(() => {
     // Clean up test data
-    db.exec('DELETE FROM users WHERE email LIKE "%@example.com"');
+    db.exec("DELETE FROM users WHERE email LIKE '%@example.com'");
   });
 
   describe('GET /api/auth/login', () => {

@@ -8,6 +8,13 @@ function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
+  // Get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/default-avatar.png';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:3000${imagePath}`;
+  };
+
   useEffect(() => {
     loadUser();
   }, []);
@@ -28,7 +35,7 @@ function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">K</span>
             </div>
             <span className="font-bold text-xl text-gray-900 hidden sm:block">
@@ -40,19 +47,19 @@ function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-primary-600 transition-colors"
             >
               หน้าแรก
             </Link>
             <Link
               to="/popular"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-primary-600 transition-colors"
             >
               ยอดนิยม
             </Link>
             <Link
               to="/search"
-              className="text-gray-700 hover:text-blue-600 transition-colors"
+              className="text-gray-700 hover:text-primary-600 transition-colors"
             >
               ค้นหา
             </Link>
@@ -62,10 +69,31 @@ function Navbar() {
           <div className="flex items-center space-x-4">
             {user && (
               <>
+                {/* Create Post Button */}
+                <Link
+                  to="/create-post"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  สร้างโพสต์
+                </Link>
+
                 {/* Notifications */}
                 <Link
                   to="/notifications"
-                  className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                  className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors"
                 >
                   <svg
                     className="w-6 h-6"
@@ -89,9 +117,10 @@ function Navbar() {
                     className="flex items-center space-x-2 focus:outline-none"
                   >
                     <img
-                      src={user.profilePicture || '/default-avatar.png'}
+                      src={getImageUrl(user.profilePicture || user.profile_picture)}
                       alt={user.name}
                       className="w-8 h-8 rounded-full object-cover"
+                      onError={(e) => { e.target.src = '/default-avatar.png'; }}
                     />
                     <span className="hidden md:block text-gray-700 font-medium">
                       {user.nickname || user.name}
@@ -149,6 +178,31 @@ function Navbar() {
                       >
                         บุ๊กมาร์ก
                       </Link>
+                      
+                      {/* Moderator and Admin Links */}
+                      {(user.role === 'moderator' || user.role === 'admin') && (
+                        <>
+                          <div className="border-t my-2"></div>
+                          <Link
+                            to="/moderation"
+                            className="block px-4 py-2 text-purple-600 hover:bg-gray-100"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            🛡️ ตรวจสอบเนื้อหา
+                          </Link>
+                        </>
+                      )}
+                      
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-red-600 hover:bg-gray-100"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          ⚙️ จัดการผู้ใช้
+                        </Link>
+                      )}
+                      
                       <div className="border-t my-2"></div>
                       <button
                         onClick={handleLogout}
@@ -165,7 +219,7 @@ function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="md:hidden p-2 text-gray-600 hover:text-blue-600"
+              className="md:hidden p-2 text-gray-600 hover:text-primary-600"
             >
               <svg
                 className="w-6 h-6"
@@ -188,22 +242,42 @@ function Navbar() {
         {showMobileMenu && (
           <div className="md:hidden py-4 border-t">
             <Link
+              to="/create-post"
+              className="flex items-center gap-2 py-2 px-4 mb-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium"
+              onClick={() => setShowMobileMenu(false)}
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              สร้างโพสต์
+            </Link>
+            <Link
               to="/"
-              className="block py-2 text-gray-700 hover:text-blue-600"
+              className="block py-2 text-gray-700 hover:text-primary-600"
               onClick={() => setShowMobileMenu(false)}
             >
               หน้าแรก
             </Link>
             <Link
               to="/popular"
-              className="block py-2 text-gray-700 hover:text-blue-600"
+              className="block py-2 text-gray-700 hover:text-primary-600"
               onClick={() => setShowMobileMenu(false)}
             >
               ยอดนิยม
             </Link>
             <Link
               to="/search"
-              className="block py-2 text-gray-700 hover:text-blue-600"
+              className="block py-2 text-gray-700 hover:text-primary-600"
               onClick={() => setShowMobileMenu(false)}
             >
               ค้นหา

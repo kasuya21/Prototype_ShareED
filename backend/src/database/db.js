@@ -34,6 +34,32 @@ export function migrate() {
   }
   
   console.log('Database migration completed successfully');
+  
+  // Run optimizations
+  optimize();
+}
+
+// Run database optimizations
+export function optimize() {
+  try {
+    const optimizePath = join(__dirname, 'optimize.sql');
+    if (existsSync(optimizePath)) {
+      const optimizations = readFileSync(optimizePath, 'utf-8');
+      
+      // Split by semicolon and execute each statement
+      const statements = optimizations.split(';').filter(stmt => stmt.trim());
+      
+      for (const statement of statements) {
+        if (statement.trim()) {
+          db.exec(statement);
+        }
+      }
+      
+      console.log('Database optimizations applied successfully');
+    }
+  } catch (error) {
+    console.error('Failed to apply database optimizations:', error.message);
+  }
 }
 
 // Initialize database on first import

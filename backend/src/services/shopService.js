@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database/db.js';
 import { ValidationError } from '../utils/errors.js';
+import cache, { CacheKeys, CacheInvalidation } from '../utils/cache.js';
 
 /**
  * Shop Service
@@ -14,12 +15,15 @@ import { ValidationError } from '../utils/errors.js';
  * @returns {Promise<Array>} Array of shop items
  */
 export async function getAllItems() {
-  const stmt = db.prepare(`
-    SELECT * FROM shop_items
-    ORDER BY type, price
-  `);
-  
-  return stmt.all();
+  // Use cache for shop items (they rarely change)
+  return cache.wrap(CacheKeys.allShopItems(), async () => {
+    const stmt = db.prepare(`
+      SELECT * FROM shop_items
+      ORDER BY type, price
+    `);
+    
+    return stmt.all();
+  }, 10 * 60 * 1000); // Cache for 10 minutes
 }
 
 /**
@@ -78,6 +82,9 @@ export async function purchaseItem(userId, itemId) {
       VALUES (?, ?, ?, 0, CURRENT_TIMESTAMP)
     `);
     addItemStmt.run(inventoryId, userId, itemId);
+    
+    // Invalidate user inventory cache
+    cache.delete(CacheKeys.userInventory(userId));
     
     return {
       success: true,

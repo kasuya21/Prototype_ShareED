@@ -16,10 +16,20 @@ describe('Shop Service', () => {
   let testItem1, testItem2, testItem3;
 
   beforeEach(async () => {
-    // Clean up test data
-    db.exec('DELETE FROM users');
-    db.exec('DELETE FROM shop_items');
+    // Clean up test data - delete in correct order to avoid foreign key constraints
     db.exec('DELETE FROM inventory_items');
+    db.exec('DELETE FROM user_achievements');
+    db.exec('DELETE FROM quests');
+    db.exec('DELETE FROM notifications');
+    db.exec('DELETE FROM follows');
+    db.exec('DELETE FROM bookmarks');
+    db.exec('DELETE FROM likes');
+    db.exec('DELETE FROM reports');
+    db.exec('DELETE FROM comments');
+    db.exec('DELETE FROM posts');
+    db.exec('DELETE FROM shop_items');
+    db.exec('DELETE FROM achievements');
+    db.exec('DELETE FROM users');
 
     // Create test user
     const profile = {
@@ -78,10 +88,20 @@ describe('Shop Service', () => {
   });
 
   afterEach(() => {
-    // Clean up test data
-    db.exec('DELETE FROM users');
-    db.exec('DELETE FROM shop_items');
+    // Clean up test data - delete in correct order to avoid foreign key constraints
     db.exec('DELETE FROM inventory_items');
+    db.exec('DELETE FROM user_achievements');
+    db.exec('DELETE FROM quests');
+    db.exec('DELETE FROM notifications');
+    db.exec('DELETE FROM follows');
+    db.exec('DELETE FROM bookmarks');
+    db.exec('DELETE FROM likes');
+    db.exec('DELETE FROM reports');
+    db.exec('DELETE FROM comments');
+    db.exec('DELETE FROM posts');
+    db.exec('DELETE FROM shop_items');
+    db.exec('DELETE FROM achievements');
+    db.exec('DELETE FROM users');
   });
 
   describe('getAllItems', () => {

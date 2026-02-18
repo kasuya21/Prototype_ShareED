@@ -38,3 +38,16 @@ export const validateBioLength = (bio) => {
     throw new ValidationError('Bio must not exceed 512 characters');
   }
 };
+
+export const validateProfilePictureFormat = (url) => {
+  if (!url) return; // Allow empty/null values
+  
+  // Check if URL ends with .jpg, .jpeg, or .png (case insensitive)
+  const validExtensions = ['.jpg', '.jpeg', '.png'];
+  const lowerUrl = url.toLowerCase();
+  const hasValidExtension = validExtensions.some(ext => lowerUrl.endsWith(ext));
+  
+  if (!hasValidExtension) {
+    throw new ValidationError('Profile picture must be in JPG or PNG format');
+  }
+};

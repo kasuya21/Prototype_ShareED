@@ -61,7 +61,7 @@ function AuthCallback() {
           ) : (
             <>
               <div className="mb-4">
-                <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+                <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">
                 กำลังเข้าสู่ระบบ...
